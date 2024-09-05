@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "cranberry",
+  "version": "${version}",
+  "name": "Cranberry",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": ["diacritics-owo"],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "MIT",
+  "icon": "assets/cranberry/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["diacritics.owo.Cranberry"],
+    "client": ["diacritics.owo.CranberryClient"]
+  },
+  "mixins": [
+    "cranberry.mixins.json",
+    {
+      "config": "cranberry.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.4",
+    "minecraft": "~1.21",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
