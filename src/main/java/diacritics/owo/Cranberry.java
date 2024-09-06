@@ -4,7 +4,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import diacritics.owo.util.Media;
 import java.io.File;
 
 public class Cranberry implements ModInitializer {
@@ -32,10 +31,6 @@ public class Cranberry implements ModInitializer {
 
 			LOGGER.info(
 					"os detection can be overriden by creating a file called .cranberryenable or .cranberrydisable in the config folder");
-		}
-
-		if (enabled) {
-			System.out.println(Media.track());
 		}
 	}
 }

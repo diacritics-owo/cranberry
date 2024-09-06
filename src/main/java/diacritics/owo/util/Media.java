@@ -20,6 +20,19 @@ public class Media {
     public Duration duration;
     public Artwork artwork;
 
+    public String title() {
+      return this.title;
+    }
+
+    public String subtitle() {
+      return this.artist + "—" + this.album;
+    }
+
+    public String duration() {
+      return Helpers.toTimeString((int) this.duration.elapsed) + "/"
+          + Helpers.toTimeString((int) this.duration.total);
+    }
+
     @Override
     public String toString() {
       return this.artist + " - " + this.title + " (" + this.album + ")" + " - " + this.duration
