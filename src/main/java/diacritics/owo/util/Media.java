@@ -7,6 +7,12 @@ import net.fabricmc.loader.api.FabricLoader;
 public class Media {
   public native static Track track();
 
+  public native static void play();
+
+  public native static void pause();
+
+  public native static void toggle();
+
   static {
     System.load(FabricLoader.getInstance().getModContainer(Cranberry.MOD_ID).get()
         .findPath("assets/cranberry/libCranberry.dylib").get().toAbsolutePath().toString());
@@ -16,7 +22,8 @@ public class Media {
     public String title;
     public String artist;
     public String album;
-
+    public String id;
+    public float playbackRate;
     public Duration duration;
     public Artwork artwork;
 
@@ -30,7 +37,7 @@ public class Media {
 
     public String duration() {
       return Helpers.toTimeString((int) this.duration.elapsed) + "/"
-          + Helpers.toTimeString((int) this.duration.total);
+          + Helpers.toTimeString((int) this.duration.total) + " (" + this.playbackRate + "x)";
     }
 
     @Override

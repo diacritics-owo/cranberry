@@ -14,8 +14,9 @@ public class CranberryClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		if (!Cranberry.enabled)
+		if (!Cranberry.enabled) {
 			return;
+		}
 
 		open = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.cranberry.open",
 				InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.cranberry.keybindings"));

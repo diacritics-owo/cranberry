@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 
+// TODO: multiplayer support
 public class Cranberry implements ModInitializer {
 	public static final String MOD_ID = "cranberry";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
