@@ -15,7 +15,11 @@ let package = Package(
     .package(
       url: "https://github.com/PrivateFrameworks/MediaRemote",
       .upToNextMinor(from: "0.1.0")
-    )
+    ),
+    .package(
+      url: "https://github.com/diacritics-owo/swift-jni",
+      branch: "swiftpm"
+    ),
   ],
   targets: [
     .target(

@@ -1,7 +1,87 @@
-import AppKit
+import Cjni
+import CoreImage
 import PrivateMediaRemote
 
-public func x() {}
+/* @_silgen_name("Java_diacritics_owo_util_Media_getRaw")
+public func getRaw(
+  env: UnsafeMutablePointer<JNIEnv>,
+  class: JavaObject
+) -> JavaString {
+  let jni = env.jni
+  return "hello!!!! i'm so happy i'm going to cry oml jni is working".javaString(env)
+} */
+// yes it did take a while to figure out
+
+@_silgen_name("Java_diacritics_owo_util_Media_track")
+public func track(
+  env: UnsafeMutablePointer<JNIEnv>,
+  class: JavaObject
+) -> JavaClass {
+  let jni = env.jni
+  let data = Cranberry().information
+
+  let informationClass = jni.FindClass(env, "diacritics/owo/util/Media$Track")!
+  let durationClass = jni.FindClass(env, "diacritics/owo/util/Media$Duration")!
+  let artworkClass = jni.FindClass(env, "diacritics/owo/util/Media$Artwork")!
+
+  let titleField = jni.GetFieldID(env, informationClass, "title", "Ljava/lang/String;")!
+  let artistField = jni.GetFieldID(env, informationClass, "artist", "Ljava/lang/String;")!
+  let albumField = jni.GetFieldID(env, informationClass, "album", "Ljava/lang/String;")!
+  let durationField = jni.GetFieldID(
+    env, informationClass, "duration", "Ldiacritics/owo/util/Media$Duration;")!
+  let artworkField = jni.GetFieldID(
+    env, informationClass, "artwork", "Ldiacritics/owo/util/Media$Artwork;")!
+
+  let elapsedField = jni.GetFieldID(env, durationClass, "elapsed", "F")!
+  let totalField = jni.GetFieldID(env, durationClass, "total", "F")!
+
+  let widthField = jni.GetFieldID(env, artworkClass, "width", "I")!
+  let heightField = jni.GetFieldID(env, artworkClass, "height", "I")!
+  let mimeField = jni.GetFieldID(env, artworkClass, "mime", "Ljava/lang/String;")!
+
+  let artwork = jni.AllocObject(env, artworkClass)!
+  jni.SetIntField(env, artwork, widthField, (data.artwork.width ?? 0).int32)
+  jni.SetIntField(env, artwork, heightField, (data.artwork.height ?? 0).int32)
+  // TODO: artwork data
+  jni.SetObjectField(env, artwork, mimeField, data.artwork.mime?.javaString(env))
+
+  let duration = jni.AllocObject(env, durationClass)!
+  jni.SetFloatField(env, duration, elapsedField, data.duration.elapsed ?? 0)
+  jni.SetFloatField(env, duration, totalField, data.duration.total ?? 0)
+
+  let information = jni.AllocObject(env, informationClass)!
+  jni.SetObjectField(env, information, titleField, data.title?.javaString(env))
+  jni.SetObjectField(env, information, artistField, data.artist?.javaString(env))
+  jni.SetObjectField(env, information, albumField, data.album?.javaString(env))
+  jni.SetObjectField(env, information, durationField, duration)
+  jni.SetObjectField(env, information, artworkField, artwork)
+
+  return information
+}
+
+extension UnsafeMutablePointer<JNIEnv> {
+  public var jni: JNINativeInterface {
+    return self.pointee.pointee
+  }
+}
+
+extension String {
+  public func javaString(_ env: UnsafeMutablePointer<JNIEnv>) -> JavaString {
+    return env.jni.NewStringUTF(env, self)!
+  }
+}
+
+extension Int {
+  public var int32: Int32 {
+    Int32(self)
+  }
+}
+
+extension UInt8 {
+  public var int32: Int32 {
+    Int32(self)
+  }
+}
 
 public class Cranberry {
   public var information: Information = Information.none()
@@ -16,7 +96,7 @@ public class Cranberry {
 
     /*
 
-    example data:
+    example data (please don't judge my taste in music):
 
     Optional([
       AnyHashable("kMRMediaRemoteNowPlayingInfoArtist"): Käärijä,

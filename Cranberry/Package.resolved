@@ -1,5 +1,5 @@
 {
-  "originHash" : "4da48a29802024b31f0f1fabd7ba089599a09738be10d0754986b23499c11f9d",
+  "originHash" : "52d5ee16331093f9fe83de8ff70f11707dd303d6ec7b1c3308ba953608510111",
   "pins" : [
     {
       "identity" : "mediaremote",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "d4c569d9ce5e146e9185ebc056fdbaaf9784ec5d",
         "version" : "0.1.1"
+      }
+    },
+    {
+      "identity" : "swift-jni",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/diacritics-owo/swift-jni",
+      "state" : {
+        "branch" : "swiftpm",
+        "revision" : "46690c059497f5cfe67c2720f84f0998a0cd5456"
       }
     }
   ],

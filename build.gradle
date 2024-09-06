@@ -67,3 +67,10 @@ publishing {
 
 	repositories {}
 }
+
+// build and copy the dylib
+tasks.build.doFirst {
+	exec {
+		commandLine 'bash', '-c', 'cd Cranberry && swift build -c release && cp .build/release/libCranberry.dylib ../src/main/resources/assets/cranberry'
+	}
+}
