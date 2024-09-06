@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.NarratedMultilineTextWidget;
 import net.minecraft.client.gui.widget.ButtonWidget.PressAction;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -14,8 +15,6 @@ public class MusicScreen extends Screen {
   public static final Text NEWLINE = Text.literal("\n");
 
   private NarratedMultilineTextWidget info;
-  private ButtonWidget play;
-  private ButtonWidget pause;
   private ButtonWidget toggle;
 
   private Media.Track track;
@@ -30,17 +29,24 @@ public class MusicScreen extends Screen {
     Media.Track newTrack = Media.track();
 
     // some values are briefly nil/default after resuming
-    if (this.track == null || !newTrack.id.equals(this.track.id)
+    if (this.track == null || (newTrack.id == null || !newTrack.id.equals(this.track.id))
         || newTrack.duration.elapsed != 0) {
       this.track = newTrack;
-    }
 
-    if (this.initialized) {
-      // TODO: duration doesn't update until the track status updates
-      this.info.setMessage(Text.literal(this.track.title()).append(NEWLINE)
-          .append(Text.literal(this.track.subtitle()).formatted(Formatting.GRAY)).append(NEWLINE)
-          .append(Text.literal(this.track.duration()).formatted(Formatting.DARK_GRAY)));
+      if (this.initialized) {
+        // TODO: elapsed duration doesn't update until the track status updates
+        this.info.setMessage(literal(this.track.title()).append(NEWLINE)
+            .append(literal(this.track.subtitle()).formatted(Formatting.GRAY)).append(NEWLINE)
+            .append(literal(this.track.duration()).formatted(Formatting.DARK_GRAY)));
+        this.toggle.setMessage(
+            Text.translatable("cranberry.button." + (this.track.playing ? "pause" : "play")));
+        this.initTabNavigation(); // reposition everything
+      }
     }
+  }
+
+  public static MutableText literal(String literal) {
+    return Text.literal(literal == null ? "" : literal);
   }
 
   @Override
@@ -48,13 +54,17 @@ public class MusicScreen extends Screen {
     this.info = this.addDrawableChild(
         new NarratedMultilineTextWidget(this.width, Text.empty(), this.textRenderer, 12));
 
-    // TODO: use translation keys
-    this.play =
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Play"), new PlayAction()).build());
-    this.pause = this
-        .addDrawableChild(ButtonWidget.builder(Text.literal("Pause"), new PauseAction()).build());
-    this.toggle = this
-        .addDrawableChild(ButtonWidget.builder(Text.literal("Toggle"), new ToggleAction()).build());
+    this.toggle = this.addDrawableChild(ButtonWidget.builder(Text.empty(), new PressAction() {
+      @Override
+      public void onPress(ButtonWidget button) {
+        if (track != null) {
+          toggle.setMessage(
+              Text.translatable("cranberry.button." + (track.playing ? "play" : "pause")));
+        }
+
+        Media.toggle();
+      }
+    }).build());
 
     this.initialized = true;
 
@@ -64,17 +74,12 @@ public class MusicScreen extends Screen {
 
   @Override
   protected void initTabNavigation() {
-    if (initialized) {
+    if (this.initialized) {
       this.info.initMaxWidth(this.width);
       this.info.setPosition((this.width - this.info.getWidth()) / 2, (this.height / 2) - (9 / 2));
 
-      this.play.setPosition((this.width - this.play.getWidth()) / 2,
-          this.info.getBottom() + 12 + 5);
-
-      this.pause.setPosition((this.width - this.pause.getWidth()) / 2, this.play.getBottom() + 5);
-
       this.toggle.setPosition((this.width - this.toggle.getWidth()) / 2,
-          this.pause.getBottom() + 5);
+          this.info.getBottom() + 12 + 5);
     }
   }
 
@@ -84,39 +89,14 @@ public class MusicScreen extends Screen {
   }
 
   @Override
-  protected boolean hasUsageText() {
-    return false;
-  }
-
-  @Override
   public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
     this.applyBlur(delta);
     this.renderInGameBackground(context);
   }
 
+  // TODO: update more efficiently (notificationcenter)
   @Override
   public void tick() {
     this.update();
-  }
-
-  public static class PlayAction implements PressAction {
-    @Override
-    public void onPress(ButtonWidget button) {
-      Media.play();
-    }
-  }
-
-  public static class PauseAction implements PressAction {
-    @Override
-    public void onPress(ButtonWidget button) {
-      Media.pause();
-    }
-  }
-
-  public static class ToggleAction implements PressAction {
-    @Override
-    public void onPress(ButtonWidget button) {
-      Media.toggle();
-    }
   }
 }

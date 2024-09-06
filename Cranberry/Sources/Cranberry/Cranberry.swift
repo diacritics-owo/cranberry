@@ -1,5 +1,4 @@
 import Cjni
-import CoreImage
 import PrivateMediaRemote
 
 /* @_silgen_name("Java_diacritics_owo_util_Media_getRaw")
@@ -28,6 +27,7 @@ public func track(
   let artistField = jni.GetFieldID(env, informationClass, "artist", "Ljava/lang/String;")!
   let albumField = jni.GetFieldID(env, informationClass, "album", "Ljava/lang/String;")!
   let idField = jni.GetFieldID(env, informationClass, "id", "Ljava/lang/String;")!
+  let playingField = jni.GetFieldID(env, informationClass, "playing", "Z")!
   let playbackRateField = jni.GetFieldID(env, informationClass, "playbackRate", "F")!
   let durationField = jni.GetFieldID(
     env, informationClass, "duration", "Ldiacritics/owo/util/Media$Duration;")!
@@ -56,6 +56,7 @@ public func track(
   jni.SetObjectField(env, information, artistField, data.artist?.javaString(env))
   jni.SetObjectField(env, information, albumField, data.album?.javaString(env))
   jni.SetObjectField(env, information, idField, data.id?.description.javaString(env))
+  jni.SetBooleanField(env, information, playingField, data.playing ? 1 : 0)
   jni.SetFloatField(env, information, playbackRateField, data.playbackRate ?? 0)
   jni.SetObjectField(env, information, durationField, duration)
   jni.SetObjectField(env, information, artworkField, artwork)
@@ -96,36 +97,6 @@ public func toggle(
   )
 }
 
-extension UnsafeMutablePointer<JNIEnv> {
-  public var jni: JNINativeInterface {
-    return self.pointee.pointee
-  }
-}
-
-extension String {
-  public func javaString(_ env: UnsafeMutablePointer<JNIEnv>) -> JavaString {
-    return env.jni.NewStringUTF(env, self)!
-  }
-}
-
-extension Int {
-  public var int32: Int32 {
-    Int32(self)
-  }
-}
-
-extension UInt8 {
-  public var int32: Int32 {
-    Int32(self)
-  }
-}
-
-extension Bool {
-  var intValue: Int {
-    return self ? 1 : 0
-  }
-}
-
 public class Cranberry {
   public var information: Information = Information.none()
 
@@ -135,41 +106,8 @@ public class Cranberry {
 
   public func update() {
     let group = DispatchGroup()
+
     group.enter()
-
-    /*
-
-    example data (please don't judge my taste in music):
-
-    Optional([
-      AnyHashable("kMRMediaRemoteNowPlayingInfoArtist"): Käärijä,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoShuffleMode"): 1,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoArtworkDataWidth"): 600,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoArtworkDataHeight"): 600,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoTotalTrackCount"): 1,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoGenre"): Finnish Pop,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoMediaType"): MRMediaRemoteMediaTypeMusic,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoTotalQueueCount"): 1,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoArtworkData"): <data>,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoAlbum"): Välikuolema,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoContentItemIdentifier"): -3_230_027_204_935_330_022,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoTimestamp"): 2024-09-05 12:55:40 +0000,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoPlaybackRate"): 0,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoUniqueIdentifier"): -3_230_027_204_935_330_022,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoIsMusicApp"): 1,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoTrackNumber"): 1,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoRepeatMode"): 3,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoTitle"): Välikuolema,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoElapsedTime"): 17.076,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoQueueIndex"): 0,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoDuration"): 192.768,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoArtworkMIMEType"): image/jpeg,
-      AnyHashable("kMRMediaRemoteNowPlayingInfoArtworkIdentifier"):
-        f7216811b3951f7e870c4715d9600dcd23325fb991e8261baa2f30c4ad3c72f0,
-    ])
-
-    */
-
     MRMediaRemoteGetNowPlayingInfo(.global(qos: .default)) { information in
       if let information = information {
         self.information.title = information[kMRMediaRemoteNowPlayingInfoTitle] as? String
@@ -199,6 +137,12 @@ public class Cranberry {
       group.leave()
     }
 
+    group.enter()
+    MRMediaRemoteGetNowPlayingApplicationIsPlaying(.global(qos: .default)) { playing in
+      self.information.playing = playing
+      group.leave()
+    }
+
     group.wait()
   }
 
@@ -207,12 +151,13 @@ public class Cranberry {
     public var artist: String?
     public var album: String?
     public var playbackRate: Float?
+    public var playing: Bool
     public var id: Int?
     public var duration: Duration
     public var artwork: Artwork
 
     public static func none() -> Information {
-      return Information(duration: Duration(), artwork: Artwork())
+      return Information(playing: false, duration: Duration(), artwork: Artwork())
     }
 
     public struct Artwork {

@@ -23,6 +23,7 @@ public class Media {
     public String artist;
     public String album;
     public String id;
+    public boolean playing;
     public float playbackRate;
     public Duration duration;
     public Artwork artwork;
@@ -35,9 +36,9 @@ public class Media {
       return this.artist + "—" + this.album;
     }
 
+    // TODO: elapsed time
     public String duration() {
-      return Helpers.toTimeString((int) this.duration.elapsed) + "/"
-          + Helpers.toTimeString((int) this.duration.total) + " (" + this.playbackRate + "x)";
+      return Helpers.toTimeString((int) this.duration.total);
     }
 
     @Override

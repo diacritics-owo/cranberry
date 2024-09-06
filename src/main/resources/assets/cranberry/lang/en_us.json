@@ -1,5 +1,7 @@
 {
   "key.cranberry.open": "Open Music Screen",
   "category.cranberry.keybindings": "Cranberry",
-  "cranberry.screen.title": "Music"
+  "cranberry.screen.title": "Music",
+  "cranberry.button.play": "Play",
+  "cranberry.button.pause": "Pause"
 }
