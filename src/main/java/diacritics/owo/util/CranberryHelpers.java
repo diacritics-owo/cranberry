@@ -1,6 +1,6 @@
 package diacritics.owo.util;
 
-public class Helpers {
+public class CranberryHelpers {
   public static String padLeft(String pad, String str, int n) {
     return pad.repeat(n).substring(str.length()) + str;
   }

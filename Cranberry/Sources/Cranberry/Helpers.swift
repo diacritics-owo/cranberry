@@ -1,24 +1,45 @@
+import AppKit
 import Cjni
+import CoreImage.CIFilterBuiltins
 import Foundation
 
-public class Listener: NSObject {
-  public let callback: () -> Void
+extension Data {
+  var ciImage: CIImage? {
+    CIImage(data: self)
+  }
+}
 
-  public init(callback: @escaping () -> Void) {
-    self.callback = callback
+extension CIImage {
+  // TODO: the image is read as argb but is rendered as rgba, leading to discoloration (e.g. 1001 argb -> 1001 rgba == 1100 argb)
+  func resized(_ size: NSSize) -> CIImage? {
+    let scale = size.height / (self.extent.height)
+    let aspectRatio = size.width / ((self.extent.width) * scale)
+
+    let resize = CIFilter.lanczosScaleTransform()
+    resize.inputImage = self
+    resize.scale = Float(scale)
+    resize.aspectRatio = Float(aspectRatio)
+
+    return resize.outputImage
   }
 
-  public func listen() {
-    NotificationCenter.default.addObserver(
-      self,
-      selector: #selector(listener),
-      name: .mrMediaRemoteNowPlayingInfoDidChange,
-      object: nil
-    )
+  var nsImage: NSImage {
+    let rep = NSCIImageRep(ciImage: self)
+    let image = NSImage(size: rep.size)
+    image.addRepresentation(rep)
+    return image
   }
+}
 
-  @objc func listener() {
-    self.callback()
+extension NSImage {
+  var png: Data? {
+    if let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil) {
+      let rep = NSBitmapImageRep(cgImage: cgImage)
+      rep.size = self.size
+      return rep.representation(using: .png, properties: [:])
+    }
+
+    return nil
   }
 }
 

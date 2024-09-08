@@ -1,23 +1,25 @@
 package diacritics.owo.gui.screen;
 
+import diacritics.owo.gui.widget.ImageWidget;
 import diacritics.owo.util.Media;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.NarratedMultilineTextWidget;
 import net.minecraft.client.gui.widget.ButtonWidget.PressAction;
-import net.minecraft.text.MutableText;
+import net.minecraft.client.texture.NativeImage;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class MusicScreen extends Screen {
   public static final String SCREEN_KEY = "cranberry.screen.title";
-  public static final Text NEWLINE = Text.literal("\n");
 
   private NarratedMultilineTextWidget info;
   private ButtonWidget toggle;
+  private ImageWidget image;
 
   private Media.Track track;
+  private Media.Artwork artwork;
 
   private boolean initialized = false;
 
@@ -26,6 +28,7 @@ public class MusicScreen extends Screen {
   }
 
   public void update() {
+    String oldId = this.track == null ? null : this.track.id;
     Media.Track newTrack = Media.track();
 
     // some values are briefly nil/default after resuming
@@ -33,20 +36,22 @@ public class MusicScreen extends Screen {
         || newTrack.duration.elapsed != 0) {
       this.track = newTrack;
 
+      if ((newTrack.id == null || !newTrack.id.equals(oldId)) || (this.artwork == null || this.artwork.data == null)) {
+        this.artwork = Media.artwork(50, 50);
+      }
+
       if (this.initialized) {
         // TODO: elapsed duration doesn't update until the track status updates
-        this.info.setMessage(literal(this.track.title()).append(NEWLINE)
-            .append(literal(this.track.subtitle()).formatted(Formatting.GRAY)).append(NEWLINE)
-            .append(literal(this.track.duration()).formatted(Formatting.DARK_GRAY)));
+        this.info.setMessage(Text.literal(this.track.title()).append("\n")
+            .append(Text.literal(this.track.subtitle()).formatted(Formatting.GRAY)).append("\n")
+            .append(Text.literal(this.track.duration()).formatted(Formatting.DARK_GRAY)));
         this.toggle.setMessage(
             Text.translatable("cranberry.button." + (this.track.playing ? "pause" : "play")));
+        this.image.setImage(this.artwork.image());
+
         this.initTabNavigation(); // reposition everything
       }
     }
-  }
-
-  public static MutableText literal(String literal) {
-    return Text.literal(literal == null ? "" : literal);
   }
 
   @Override
@@ -66,6 +71,9 @@ public class MusicScreen extends Screen {
       }
     }).build());
 
+    this.image = this
+        .addDrawableChild(new ImageWidget(0, 0, new NativeImage(NativeImage.Format.RGBA, 1, 1, false)));
+
     this.initialized = true;
 
     this.update();
@@ -80,6 +88,9 @@ public class MusicScreen extends Screen {
 
       this.toggle.setPosition((this.width - this.toggle.getWidth()) / 2,
           this.info.getBottom() + 12 + 5);
+
+      this.image.setPosition((this.width - this.image.getWidth()) / 2,
+          (this.info.getBottom() - this.info.getHeight() - this.image.getHeight()) - 12 - 5);
     }
   }
 

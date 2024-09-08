@@ -12,10 +12,10 @@ public class Cranberry implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static boolean enabled = false;
 
-	public static File enableFile =
-			new File(FabricLoader.getInstance().getConfigDir().resolve(".cranberryenable").toString());
-	public static File disableFile =
-			new File(FabricLoader.getInstance().getConfigDir().resolve(".cranberrydisable").toString());
+	public static File enableFile = new File(
+			FabricLoader.getInstance().getConfigDir().resolve(".cranberryenable").toString());
+	public static File disableFile = new File(
+			FabricLoader.getInstance().getConfigDir().resolve(".cranberrydisable").toString());
 
 	@Override
 	public void onInitialize() {

@@ -1,11 +1,14 @@
 package diacritics.owo.util;
 
-import java.nio.ByteBuffer;
+import org.apache.commons.codec.binary.Base64;
 import diacritics.owo.Cranberry;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.texture.NativeImage;
 
 public class Media {
   public native static Track track();
+
+  public native static Artwork artwork(int width, int height);
 
   public native static void play();
 
@@ -26,49 +29,35 @@ public class Media {
     public boolean playing;
     public float playbackRate;
     public Duration duration;
-    public Artwork artwork;
 
     public String title() {
-      return this.title;
+      return this.title + ""; // (ensure non-null)
     }
 
     public String subtitle() {
-      return this.artist + "—" + this.album;
+      return this.artist + " — " + this.album;
     }
 
     // TODO: elapsed time
     public String duration() {
-      return Helpers.toTimeString((int) this.duration.total);
-    }
-
-    @Override
-    public String toString() {
-      return this.artist + " - " + this.title + " (" + this.album + ")" + " - " + this.duration
-          + " [" + this.artwork + "]";
+      return CranberryHelpers.toTimeString((int) this.duration.total);
     }
   }
 
   public static class Duration {
     public float elapsed;
     public float total;
-
-    @Override
-    public String toString() {
-      return this.elapsed + "/" + this.total;
-    }
   }
 
   public static class Artwork {
-    public int width;
-    public int height;
-    public ByteBuffer data;
-    public String mime;
+    public String data;
 
-    @Override
-    public String toString() {
-      return this.width + "x" + this.height + " "
-          + (this.data == null ? 0 : this.data.array().length) + " " + this.mime + " "
-          + (this.data == null ? ":(" : this.data.get(0));
+    public NativeImage image() {
+      try {
+        return NativeImage.read(Base64.decodeBase64(this.data));
+      } catch (Exception e) {
+        return new NativeImage(NativeImage.Format.RGBA, 1, 1, false);
+      }
     }
   }
 }
