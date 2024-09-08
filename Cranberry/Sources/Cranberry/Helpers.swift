@@ -10,17 +10,16 @@ extension Data {
 }
 
 extension CIImage {
-  // TODO: the image is read as argb but is rendered as rgba, leading to discoloration (e.g. 1001 argb -> 1001 rgba == 1100 argb)
   func resized(_ size: NSSize) -> CIImage? {
     let scale = size.height / (self.extent.height)
     let aspectRatio = size.width / ((self.extent.width) * scale)
 
-    let resize = CIFilter.lanczosScaleTransform()
-    resize.inputImage = self
-    resize.scale = Float(scale)
-    resize.aspectRatio = Float(aspectRatio)
+    let filter = CIFilter.lanczosScaleTransform()
+    filter.inputImage = self
+    filter.scale = Float(scale)
+    filter.aspectRatio = Float(aspectRatio)
 
-    return resize.outputImage
+    return filter.outputImage
   }
 
   var nsImage: NSImage {
@@ -32,14 +31,42 @@ extension CIImage {
 }
 
 extension NSImage {
-  var png: Data? {
+  // TODO: not a good solution (sending the png data results in discoloration while rendering even though the actual image is fine
+  // (spent a couple hours on it, i wasn't able to figure out exactly how to fix it)
+  // (what's even weirder is that other images work fine (see the circumflex testmod))
+  var data: String? {
     if let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil) {
+      var data = ""
       let rep = NSBitmapImageRep(cgImage: cgImage)
-      rep.size = self.size
-      return rep.representation(using: .png, properties: [:])
+
+      for x in 0..<Int(self.size.width) {
+        for y in 0..<Int(self.size.height) {
+          let color = rep.colorAt(x: x, y: y)!
+          let a = Int(Float(color.alphaComponent) * 0xff)
+          let r = Int(Float(color.redComponent) * 0xff)
+          let g = Int(Float(color.greenComponent) * 0xff)
+          let b = Int(Float(color.blueComponent) * 0xff)
+
+          data += String(a << 24 + r << 16 + g << 8 + b, radix: 16).leftPadding(
+            toLength: 8, withPad: "0")
+        }
+      }
+
+      return data
     }
 
     return nil
+  }
+}
+
+extension String {
+  func leftPadding(toLength: Int, withPad character: Character) -> String {
+    let stringLength = self.count
+    if stringLength < toLength {
+      return String(repeatElement(character, count: toLength - stringLength)) + self
+    } else {
+      return String(self.suffix(toLength))
+    }
   }
 }
 

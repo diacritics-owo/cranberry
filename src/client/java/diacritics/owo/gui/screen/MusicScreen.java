@@ -19,7 +19,7 @@ public class MusicScreen extends Screen {
   private ImageWidget image;
 
   private Media.Track track;
-  private Media.Artwork artwork;
+  private NativeImage artwork;
 
   private boolean initialized = false;
 
@@ -36,8 +36,8 @@ public class MusicScreen extends Screen {
         || newTrack.duration.elapsed != 0) {
       this.track = newTrack;
 
-      if ((newTrack.id == null || !newTrack.id.equals(oldId)) || (this.artwork == null || this.artwork.data == null)) {
-        this.artwork = Media.artwork(50, 50);
+      if (this.artwork == null || (newTrack.id == null || !newTrack.id.equals(oldId))) {
+        this.artwork = Media.artwork(50, 50).image();
       }
 
       if (this.initialized) {
@@ -47,7 +47,8 @@ public class MusicScreen extends Screen {
             .append(Text.literal(this.track.duration()).formatted(Formatting.DARK_GRAY)));
         this.toggle.setMessage(
             Text.translatable("cranberry.button." + (this.track.playing ? "pause" : "play")));
-        this.image.setImage(this.artwork.image());
+        this.image
+            .setImage(this.artwork == null ? new NativeImage(NativeImage.Format.RGBA, 1, 1, false) : this.artwork);
 
         this.initTabNavigation(); // reposition everything
       }

@@ -63,15 +63,19 @@ public func artwork(
 
   let artworkClass = jni.FindClass(env, "diacritics/owo/util/Media$Artwork")!
 
+  let widthField = jni.GetFieldID(env, artworkClass, "width", "I")!
+  let heightField = jni.GetFieldID(env, artworkClass, "height", "I")!
   let dataField = jni.GetFieldID(env, artworkClass, "data", "Ljava/lang/String;")!
 
   let image = data.artwork.data?.ciImage
 
   let artwork = jni.AllocObject(env, artworkClass)!
+  jni.SetIntField(env, artwork, widthField, width)
+  jni.SetIntField(env, artwork, heightField, height)
   jni.SetObjectField(
     env, artwork, dataField,
     image?.resized(size)?.nsImage
-      .png?.base64EncodedString().javaString(env))
+      .data?.javaString(env))
 
   return artwork
 }

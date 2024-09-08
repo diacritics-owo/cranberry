@@ -1,9 +1,14 @@
 package diacritics.owo.util;
 
-import org.apache.commons.codec.binary.Base64;
 import diacritics.owo.Cranberry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.texture.NativeImage;
+import com.google.common.base.Splitter;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.Nullable;
 
 public class Media {
   public native static Track track();
@@ -50,13 +55,32 @@ public class Media {
   }
 
   public static class Artwork {
+    public int width;
+    public int height;
     public String data;
 
+    @Nullable
     public NativeImage image() {
       try {
-        return NativeImage.read(Base64.decodeBase64(this.data));
+        if (this.data == null) {
+          return null;
+        }
+
+        NativeImage image = new NativeImage(this.width, this.height, true);
+        List<Integer> data = Splitter.fixedLength(8).splitToStream(this.data)
+            .map(n -> new BigInteger(n, 16).intValue())
+            .collect(Collectors.toList());
+
+        for (int x = 0; x < this.width; x++) {
+          for (int y = 0; y < this.height; y++) {
+            image.setColor(x, y, data.get((width * x) + y));
+          }
+        }
+
+        return image;
       } catch (Exception e) {
-        return new NativeImage(NativeImage.Format.RGBA, 1, 1, false);
+        Cranberry.LOGGER.error("failed to create nativeimage for artwork!", e);
+        return null;
       }
     }
   }
