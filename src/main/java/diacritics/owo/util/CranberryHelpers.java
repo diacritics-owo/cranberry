@@ -9,6 +9,8 @@ import io.wispforest.owo.ui.core.Size;
 public class CranberryHelpers {
   public static final Size IMAGE_SIZE = Size.of(50, 50);
   public static final Size ICON_SIZE = Size.of(10, 10);
+  public static final int ICON_DATA_LENGTH = 8
+      * (ICON_SIZE.width() * ICON_SIZE.height());
 
   public static String padLeft(String pad, String str, int n) {
     return pad.repeat(n).substring(str.length()) + str;

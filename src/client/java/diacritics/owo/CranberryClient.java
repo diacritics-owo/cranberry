@@ -1,5 +1,6 @@
 package diacritics.owo;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +25,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 
-// TODO: use the listener to update a global track instance
 public class CranberryClient implements ClientModInitializer {
 	public static final ClientConfig CONFIG = ClientConfig.createAndLoad();
 
@@ -32,11 +32,32 @@ public class CranberryClient implements ClientModInitializer {
 	private static String lastId = null;
 	private static Artwork icon = new Artwork(CranberryHelpers.ICON_SIZE.width(), CranberryHelpers.ICON_SIZE.height());
 
+	public static boolean enabled = false;
+	public static File enableFile = new File(
+			FabricLoader.getInstance().getConfigDir().resolve(".cranberryenable").toString());
+	public static File disableFile = new File(
+			FabricLoader.getInstance().getConfigDir().resolve(".cranberrydisable").toString());
+
 	private static KeyBinding open;
 
 	@Override
 	public void onInitializeClient() {
-		if (!Cranberry.enabled) {
+		if (enableFile.exists() || disableFile.exists()) {
+			enabled = enableFile.exists();
+			Cranberry.LOGGER.info("detected an override file - cranberry will be {}abled", enabled ? "en" : "dis");
+		} else {
+			if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+				Cranberry.LOGGER.info("os detected as macos - cranberry will enable itself");
+				enabled = true;
+			} else {
+				Cranberry.LOGGER.warn("os not detected as macos - cranberry will not be enabled");
+			}
+
+			Cranberry.LOGGER.info(
+					"os detection can be overriden by creating a file called .cranberryenable or .cranberrydisable in the config folder");
+		}
+
+		if (!enabled) {
 			return;
 		}
 

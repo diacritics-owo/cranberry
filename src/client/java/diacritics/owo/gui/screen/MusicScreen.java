@@ -89,7 +89,6 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
     if (this.track == null || newTrack.valid() || newId) {
       this.track = newTrack;
 
-      // TODO: elapsed duration doesn't update until the track status updates
       this.info.text(this.track.getTitle().append("\n")
           .append(this.track.getSubtitle()).append("\n")
           .append(this.track.getDuration()));
