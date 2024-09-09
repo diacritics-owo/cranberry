@@ -5,14 +5,13 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import diacritics.owo.network.C2SListeningPacket;
+import diacritics.owo.network.C2SRequestPollListeningPacket;
 import diacritics.owo.network.S2CListeningPacket;
+import diacritics.owo.network.S2CPollListeningPacket;
 import io.wispforest.owo.network.OwoNetChannel;
-
 import java.io.File;
 
-// TODO: multiplayer support
 public class Cranberry implements ModInitializer {
 	public static final String MOD_ID = "cranberry";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -47,6 +46,11 @@ public class Cranberry implements ModInitializer {
 			UWU.registerServerbound(C2SListeningPacket.class, (message, access) -> {
 				// TODO: validate data length
 				UWU.serverHandle(access.runtime()).send(S2CListeningPacket.from(access.player().getUuid(), message));
+			});
+
+			// TODO: configurable
+			UWU.registerServerbound(C2SRequestPollListeningPacket.class, (message, access) -> {
+				UWU.serverHandle(access.runtime()).send(new S2CPollListeningPacket());
 			});
 		}
 	}

@@ -20,14 +20,15 @@ public func initializeListeners(
 
   let clientClass = jni.FindClass(env, "diacritics/owo/CranberryClient")
 
-  let sendPacketMethod = jni.GetStaticMethodID(env, clientClass, "sendPacket", "()V")!
+  let sendListeningPacketMethod = jni.GetStaticMethodID(
+    env, clientClass, "sendListeningPacket", "()V")!
 
   NotificationCenter.default.addObserver(
-    forName: NSNotification.Name(rawValue: "kMRMediaRemoteNowPlayingInfoDidChangeNotification"),
+    forName: .mrMediaRemoteNowPlayingInfoDidChange,
     object: nil, queue: nil
   ) { (notification) in
     var parameter = JavaParameter()
-    jni.callStatic(env, clientClass, sendPacketMethod, &parameter) as Void
+    jni.callStatic(env, clientClass, sendListeningPacketMethod, &parameter) as Void
   }
 
   MRMediaRemoteRegisterForNowPlayingNotifications(DispatchQueue.main)
