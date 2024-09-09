@@ -60,18 +60,20 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
     this.image = new ImageWidget(0, 0,
         Artwork.empty(CranberryHelpers.IMAGE_SIZE.width(), CranberryHelpers.IMAGE_SIZE.height()));
     this.listening = Containers.verticalFlow(Sizing.content(), Sizing.content());
+    this.listening.padding(Insets.of(5))
+        .surface(Surface.PANEL_INSET);
 
     rootComponent.child(
-        Containers.verticalFlow(Sizing.fill(70), Sizing.content())
+        Containers.verticalFlow(Sizing.content(), Sizing.content())
             .child(Containers.horizontalFlow(Sizing.content(), Sizing.content())
                 .child(Components.wrapVanillaWidget(this.image))
                 .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
-                    .child(this.info).child(this.toggle).margins(Insets.of(10)))
-                .verticalAlignment(VerticalAlignment.CENTER))
-            .child(Containers.verticalScroll(Sizing.content(), Sizing.fixed(25),
-                this.listening))
+                    .child(this.info).child(this.toggle).margins(Insets.left(10)))
+                .verticalAlignment(VerticalAlignment.CENTER)
+                .padding(Insets.bottom(10)))
+            .child(this.listening)
             .padding(Insets.of(10))
-            .surface(Surface.DARK_PANEL)
+            .surface(Surface.PANEL)
             .verticalAlignment(VerticalAlignment.CENTER));
   }
 
@@ -103,12 +105,14 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
         return Containers.horizontalFlow(Sizing.content(), Sizing.content())
             .child(Components
                 .label(Text.literal(
+                    // TODO: check if player exists
                     MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(player).getProfile()
                         .getName())))
             .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
                 .child(Components.wrapVanillaWidget(new ImageWidget(0, 0, icon.image()))).margins(Insets.horizontal(5)))
             .child(Components.label(track.getShortTitle()))
-            .verticalAlignment(VerticalAlignment.CENTER);
+            .verticalAlignment(VerticalAlignment.CENTER)
+            .margins(Insets.vertical(2));
       }).collect(Collectors.toList()));
     }
   }
