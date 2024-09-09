@@ -2,6 +2,7 @@ package diacritics.owo;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
@@ -33,5 +34,14 @@ public class Cranberry implements ModInitializer {
 			LOGGER.info(
 					"os detection can be overriden by creating a file called .cranberryenable or .cranberrydisable in the config folder");
 		}
+	}
+
+	public static Identifier identifier(String path) {
+		return Identifier.of(MOD_ID, path);
+	}
+
+	static {
+		System.load(FabricLoader.getInstance().getModContainer(Cranberry.MOD_ID).get()
+				.findPath("assets/cranberry/libCranberry.dylib").get().toAbsolutePath().toString());
 	}
 }

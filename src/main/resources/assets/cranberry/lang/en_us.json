@@ -1,7 +1,10 @@
 {
   "key.cranberry.open": "Open Music Screen",
   "category.cranberry.keybindings": "Cranberry",
+
   "cranberry.screen.title": "Music",
   "cranberry.button.play": "Play",
-  "cranberry.button.pause": "Pause"
+  "cranberry.button.pause": "Pause",
+  "cranberry.text.no_title": "No Title",
+  "cranberry.text.no_artist": "Unknown Artist"
 }

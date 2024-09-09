@@ -50,7 +50,7 @@ public func track(
   return information
 }
 
-@_silgen_name("Java_diacritics_owo_util_Media_artwork")
+@_silgen_name("Java_diacritics_owo_util_Artwork_artwork")
 public func artwork(
   env: UnsafeMutablePointer<JNIEnv>,
   class: JavaObject,
@@ -61,7 +61,7 @@ public func artwork(
   let data = Cranberry().information
   let size = NSSize(width: Int(width), height: Int(height))
 
-  let artworkClass = jni.FindClass(env, "diacritics/owo/util/Media$Artwork")!
+  let artworkClass = jni.FindClass(env, "diacritics/owo/util/Artwork")!
 
   let widthField = jni.GetFieldID(env, artworkClass, "width", "I")!
   let heightField = jni.GetFieldID(env, artworkClass, "height", "I")!

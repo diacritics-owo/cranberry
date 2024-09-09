@@ -1,114 +1,108 @@
 package diacritics.owo.gui.screen;
 
+import org.jetbrains.annotations.NotNull;
+
 import diacritics.owo.gui.widget.ImageWidget;
+import diacritics.owo.util.Artwork;
 import diacritics.owo.util.Media;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.NarratedMultilineTextWidget;
-import net.minecraft.client.gui.widget.ButtonWidget.PressAction;
+import io.wispforest.owo.ui.base.BaseOwoScreen;
+import io.wispforest.owo.ui.component.ButtonComponent;
+import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.component.LabelComponent;
+import io.wispforest.owo.ui.container.Containers;
+import io.wispforest.owo.ui.container.FlowLayout;
+import io.wispforest.owo.ui.core.HorizontalAlignment;
+import io.wispforest.owo.ui.core.Insets;
+import io.wispforest.owo.ui.core.OwoUIAdapter;
+import io.wispforest.owo.ui.core.Size;
+import io.wispforest.owo.ui.core.Sizing;
+import io.wispforest.owo.ui.core.Surface;
+import io.wispforest.owo.ui.core.VerticalAlignment;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
-public class MusicScreen extends Screen {
-  public static final String SCREEN_KEY = "cranberry.screen.title";
+public class MusicScreen extends BaseOwoScreen<FlowLayout> {
+  public static final Size IMAGE_SIZE = Size.of(50, 50);
+  public static final Size ICON_SIZE = Size.of(10, 10);
 
-  private NarratedMultilineTextWidget info;
-  private ButtonWidget toggle;
   private ImageWidget image;
+  private LabelComponent info;
+  private ButtonComponent toggle;
 
   private Media.Track track;
   private NativeImage artwork;
 
-  private boolean initialized = false;
-
   public MusicScreen() {
-    super(Text.translatable(SCREEN_KEY));
-  }
-
-  public void update() {
-    String oldId = this.track == null ? null : this.track.id;
-    Media.Track newTrack = Media.track();
-
-    // some values are briefly nil/default after resuming
-    if (this.track == null || (newTrack.id == null || !newTrack.id.equals(this.track.id))
-        || newTrack.duration.elapsed != 0) {
-      this.track = newTrack;
-
-      if (this.artwork == null || (newTrack.id == null || !newTrack.id.equals(oldId))) {
-        this.artwork = Media.artwork(50, 50).image();
-      }
-
-      if (this.initialized) {
-        // TODO: elapsed duration doesn't update until the track status updates
-        this.info.setMessage(Text.literal(this.track.title()).append("\n")
-            .append(Text.literal(this.track.subtitle()).formatted(Formatting.GRAY)).append("\n")
-            .append(Text.literal(this.track.duration()).formatted(Formatting.DARK_GRAY)));
-        this.toggle.setMessage(
-            Text.translatable("cranberry.button." + (this.track.playing ? "pause" : "play")));
-        this.image
-            .setImage(this.artwork == null ? new NativeImage(NativeImage.Format.RGBA, 1, 1, false) : this.artwork);
-
-        this.initTabNavigation(); // reposition everything
-      }
-    }
+    super(Text.translatable("cranberry.screen.title"));
   }
 
   @Override
-  protected void init() {
-    this.info = this.addDrawableChild(
-        new NarratedMultilineTextWidget(this.width, Text.empty(), this.textRenderer, 12));
-
-    this.toggle = this.addDrawableChild(ButtonWidget.builder(Text.empty(), new PressAction() {
-      @Override
-      public void onPress(ButtonWidget button) {
-        if (track != null) {
-          toggle.setMessage(
-              Text.translatable("cranberry.button." + (track.playing ? "play" : "pause")));
-        }
-
-        Media.toggle();
-      }
-    }).build());
-
-    this.image = this
-        .addDrawableChild(new ImageWidget(0, 0, new NativeImage(NativeImage.Format.RGBA, 1, 1, false)));
-
-    this.initialized = true;
-
-    this.update();
-    this.initTabNavigation();
+  protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
+    return OwoUIAdapter.create(this, Containers::verticalFlow);
   }
 
   @Override
-  protected void initTabNavigation() {
-    if (this.initialized) {
-      this.info.initMaxWidth(this.width);
-      this.info.setPosition((this.width - this.info.getWidth()) / 2, (this.height / 2) - (9 / 2));
+  protected void build(FlowLayout rootComponent) {
+    rootComponent
+        .surface(Surface.VANILLA_TRANSLUCENT)
+        .horizontalAlignment(HorizontalAlignment.CENTER)
+        .verticalAlignment(VerticalAlignment.CENTER);
 
-      this.toggle.setPosition((this.width - this.toggle.getWidth()) / 2,
-          this.info.getBottom() + 12 + 5);
+    this.info = Components.label(Text.empty());
+    this.toggle = Components.button(Text.empty(),
+        button -> {
+          if (this.track != null) {
+            this.setToggle(!this.track.playing());
+          }
 
-      this.image.setPosition((this.width - this.image.getWidth()) / 2,
-          (this.info.getBottom() - this.info.getHeight() - this.image.getHeight()) - 12 - 5);
-    }
+          Media.toggle();
+        });
+    this.image = new ImageWidget(0, 0, Artwork.empty(IMAGE_SIZE.width(), IMAGE_SIZE.height()));
+
+    rootComponent.child(
+        Containers.verticalFlow(Sizing.content(), Sizing.content())
+            .child(Containers.horizontalFlow(Sizing.content(), Sizing.content())
+                .child(Components.wrapVanillaWidget(this.image))
+                .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
+                    .child(this.info).child(this.toggle).padding(Insets.of(10)))
+                .verticalAlignment(VerticalAlignment.CENTER))
+            .padding(Insets.of(10))
+            .surface(Surface.DARK_PANEL)
+            .verticalAlignment(VerticalAlignment.CENTER)
+            .horizontalAlignment(HorizontalAlignment.CENTER));
   }
 
-  @Override
-  public boolean shouldCloseOnEsc() {
-    return true;
-  }
-
-  @Override
-  public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-    this.applyBlur(delta);
-    this.renderInGameBackground(context);
-  }
-
-  // TODO: update more efficiently (notificationcenter)
   @Override
   public void tick() {
-    this.update();
+    Media.Track newTrack = Media.track();
+    boolean newId = newTrack.id() == null || !newTrack.id().equals(this.track == null ? null : this.track.id());
+
+    // some values are briefly nil/default after resuming
+
+    if (this.artwork == null || newId) {
+      this.artwork = Artwork.artwork(IMAGE_SIZE.width(), IMAGE_SIZE.height()).image();
+      this.image.setImage(
+          this.artwork == null ? Artwork.empty(IMAGE_SIZE.width(), IMAGE_SIZE.height()) : this.artwork);
+    }
+
+    if (this.track == null || newTrack.valid() || newId) {
+      this.track = newTrack;
+
+      // TODO: elapsed duration doesn't update until the track status updates
+      this.info.text(this.track.getTitle().append("\n")
+          .append(this.track.getSubtitle()).append("\n")
+          .append(this.track.getDuration()));
+      this.setToggle(this.track.playing());
+    }
+  }
+
+  public void forceUpdate() {
+    this.info.text(this.info.text());
+  }
+
+  public void setToggle(boolean playing) {
+    this.toggle.setMessage(
+        Text.translatable("cranberry.button." + (playing ? "pause" : "play")));
+    this.forceUpdate();
   }
 }
