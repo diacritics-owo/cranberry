@@ -4,8 +4,12 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.google.common.base.Splitter;
+import io.wispforest.owo.ui.core.Size;
 
 public class CranberryHelpers {
+  public static final Size IMAGE_SIZE = Size.of(50, 50);
+  public static final Size ICON_SIZE = Size.of(10, 10);
+
   public static String padLeft(String pad, String str, int n) {
     return pad.repeat(n).substring(str.length()) + str;
   }

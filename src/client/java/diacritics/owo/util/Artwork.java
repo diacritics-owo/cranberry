@@ -2,6 +2,7 @@ package diacritics.owo.util;
 
 import net.minecraft.client.texture.NativeImage;
 import diacritics.owo.Cranberry;
+import diacritics.owo.network.ArtworkData;
 
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +32,15 @@ public class Artwork {
     NativeImage image = new NativeImage(width, height, false);
     image.apply(x -> 0);
     return image;
+  }
+
+  public static Artwork from(ArtworkData data) {
+    return new Artwork(data.width(), data.height(), data.data());
+  }
+
+  public ArtworkData artworkData() {
+    return new ArtworkData(this.width, this.height,
+        this.data == null ? "0".repeat(8 * this.width * this.height) : this.data);
   }
 
   public void reload() {

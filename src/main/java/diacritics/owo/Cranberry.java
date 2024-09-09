@@ -5,6 +5,11 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import diacritics.owo.network.C2SListeningPacket;
+import diacritics.owo.network.S2CListeningPacket;
+import io.wispforest.owo.network.OwoNetChannel;
+
 import java.io.File;
 
 // TODO: multiplayer support
@@ -18,8 +23,11 @@ public class Cranberry implements ModInitializer {
 	public static File disableFile = new File(
 			FabricLoader.getInstance().getConfigDir().resolve(".cranberrydisable").toString());
 
+	public static OwoNetChannel UWU = OwoNetChannel.create(identifier("uwu"));
+
 	@Override
 	public void onInitialize() {
+		// TODO: move to client initializer
 		if (enableFile.exists() || disableFile.exists()) {
 			enabled = enableFile.exists();
 			LOGGER.info("detected an override file - cranberry will be {}abled", enabled ? "en" : "dis");
@@ -34,14 +42,16 @@ public class Cranberry implements ModInitializer {
 			LOGGER.info(
 					"os detection can be overriden by creating a file called .cranberryenable or .cranberrydisable in the config folder");
 		}
+
+		if (enabled) {
+			UWU.registerServerbound(C2SListeningPacket.class, (message, access) -> {
+				// TODO: validate data length
+				UWU.serverHandle(access.runtime()).send(S2CListeningPacket.from(access.player().getUuid(), message));
+			});
+		}
 	}
 
 	public static Identifier identifier(String path) {
 		return Identifier.of(MOD_ID, path);
-	}
-
-	static {
-		System.load(FabricLoader.getInstance().getModContainer(Cranberry.MOD_ID).get()
-				.findPath("assets/cranberry/libCranberry.dylib").get().toAbsolutePath().toString());
 	}
 }

@@ -11,43 +11,67 @@ public func getRaw(
 } */
 // yes it did take a while to figure out
 
+@_silgen_name("Java_diacritics_owo_CranberryClient_initializeListeners")
+public func initializeListeners(
+  env: UnsafeMutablePointer<JNIEnv>,
+  class: JavaObject
+) {
+  let jni = env.jni
+
+  let clientClass = jni.FindClass(env, "diacritics/owo/CranberryClient")
+
+  let sendPacketMethod = jni.GetStaticMethodID(env, clientClass, "sendPacket", "()V")!
+
+  NotificationCenter.default.addObserver(
+    forName: NSNotification.Name(rawValue: "kMRMediaRemoteNowPlayingInfoDidChangeNotification"),
+    object: nil, queue: nil
+  ) { (notification) in
+    var parameter = JavaParameter()
+    jni.callStatic(env, clientClass, sendPacketMethod, &parameter) as Void
+  }
+
+  MRMediaRemoteRegisterForNowPlayingNotifications(DispatchQueue.main)
+}
+
 @_silgen_name("Java_diacritics_owo_util_Media_track")
 public func track(
   env: UnsafeMutablePointer<JNIEnv>,
   class: JavaObject
 ) -> JavaObject {
-  let jni = env.jni
-  let data = Cranberry().information
+  autoreleasepool {
+    let jni = env.jni
+    let data = Cranberry().information
 
-  let informationClass = jni.FindClass(env, "diacritics/owo/util/Media$Track")!
-  let durationClass = jni.FindClass(env, "diacritics/owo/util/Media$Duration")!
+    let informationClass = jni.FindClass(env, "diacritics/owo/util/Media$Track")!
+    let durationClass = jni.FindClass(env, "diacritics/owo/util/Media$Duration")!
 
-  let titleField = jni.GetFieldID(env, informationClass, "title", "Ljava/lang/String;")!
-  let artistField = jni.GetFieldID(env, informationClass, "artist", "Ljava/lang/String;")!
-  let albumField = jni.GetFieldID(env, informationClass, "album", "Ljava/lang/String;")!
-  let idField = jni.GetFieldID(env, informationClass, "id", "Ljava/lang/String;")!
-  let playingField = jni.GetFieldID(env, informationClass, "playing", "Z")!
-  let playbackRateField = jni.GetFieldID(env, informationClass, "playbackRate", "F")!
-  let durationField = jni.GetFieldID(
-    env, informationClass, "duration", "Ldiacritics/owo/util/Media$Duration;")!
+    let titleField = jni.GetFieldID(env, informationClass, "title", "Ljava/lang/String;")!
+    let artistField = jni.GetFieldID(env, informationClass, "artist", "Ljava/lang/String;")!
+    let albumField = jni.GetFieldID(env, informationClass, "album", "Ljava/lang/String;")!
+    let idField = jni.GetFieldID(env, informationClass, "id", "Ljava/lang/String;")!
+    let playingField = jni.GetFieldID(env, informationClass, "playing", "Z")!
+    let playbackRateField = jni.GetFieldID(env, informationClass, "playbackRate", "F")!
+    let durationField = jni.GetFieldID(
+      env, informationClass, "duration", "Ldiacritics/owo/util/Media$Duration;")!
 
-  let elapsedField = jni.GetFieldID(env, durationClass, "elapsed", "F")!
-  let totalField = jni.GetFieldID(env, durationClass, "total", "F")!
+    let elapsedField = jni.GetFieldID(env, durationClass, "elapsed", "F")!
+    let totalField = jni.GetFieldID(env, durationClass, "total", "F")!
 
-  let duration = jni.AllocObject(env, durationClass)!
-  jni.SetFloatField(env, duration, elapsedField, data.duration.elapsed ?? 0)
-  jni.SetFloatField(env, duration, totalField, data.duration.total ?? 0)
+    let duration = jni.AllocObject(env, durationClass)!
+    jni.SetFloatField(env, duration, elapsedField, data.duration.elapsed ?? 0)
+    jni.SetFloatField(env, duration, totalField, data.duration.total ?? 0)
 
-  let information = jni.AllocObject(env, informationClass)!
-  jni.SetObjectField(env, information, titleField, data.title?.javaString(env))
-  jni.SetObjectField(env, information, artistField, data.artist?.javaString(env))
-  jni.SetObjectField(env, information, albumField, data.album?.javaString(env))
-  jni.SetObjectField(env, information, idField, data.id?.description.javaString(env))
-  jni.SetBooleanField(env, information, playingField, data.playing ? 1 : 0)
-  jni.SetFloatField(env, information, playbackRateField, data.playbackRate ?? 0)
-  jni.SetObjectField(env, information, durationField, duration)
+    let information = jni.AllocObject(env, informationClass)!
+    jni.SetObjectField(env, information, titleField, data.title?.javaString(env))
+    jni.SetObjectField(env, information, artistField, data.artist?.javaString(env))
+    jni.SetObjectField(env, information, albumField, data.album?.javaString(env))
+    jni.SetObjectField(env, information, idField, data.id?.description.javaString(env))
+    jni.SetBooleanField(env, information, playingField, data.playing ? 1 : 0)
+    jni.SetFloatField(env, information, playbackRateField, data.playbackRate ?? 0)
+    jni.SetObjectField(env, information, durationField, duration)
 
-  return information
+    return information
+  }
 }
 
 @_silgen_name("Java_diacritics_owo_util_Artwork__1reload")
@@ -55,25 +79,25 @@ public func reload(
   env: UnsafeMutablePointer<JNIEnv>,
   artwork: JavaObject
 ) {
-  let jni = env.jni
-  let data = Cranberry().information
+  autoreleasepool {
+    let jni = env.jni
+    let data = Cranberry().information
 
-  let artworkClass = jni.FindClass(env, "diacritics/owo/util/Artwork")!
+    let artworkClass = jni.FindClass(env, "diacritics/owo/util/Artwork")!
 
-  let widthField = jni.GetFieldID(env, artworkClass, "width", "I")!
-  let heightField = jni.GetFieldID(env, artworkClass, "height", "I")!
-  let dataField = jni.GetFieldID(env, artworkClass, "data", "Ljava/lang/String;")!
+    let widthField = jni.GetFieldID(env, artworkClass, "width", "I")!
+    let heightField = jni.GetFieldID(env, artworkClass, "height", "I")!
+    let dataField = jni.GetFieldID(env, artworkClass, "data", "Ljava/lang/String;")!
 
-  let width = jni.GetIntField(env, artwork, widthField)
-  let height = jni.GetIntField(env, artwork, heightField)
-  let size = NSSize(width: Int(width), height: Int(height))
+    let width = jni.GetIntField(env, artwork, widthField)
+    let height = jni.GetIntField(env, artwork, heightField)
+    let size = NSSize(width: Int(width), height: Int(height))
 
-  let image = data.artwork.data?.ciImage
-
-  jni.SetObjectField(
-    env, artwork, dataField,
-    image?.resized(size)?.nsImage
-      .data?.javaString(env))
+    jni.SetObjectField(
+      env, artwork, dataField,
+      data.artwork.data?.ciImage?.resized(size)?.nsImage
+        .data?.javaString(env))
+  }
 }
 
 @_silgen_name("Java_diacritics_owo_util_Media_play")

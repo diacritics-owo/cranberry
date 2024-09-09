@@ -29,8 +29,22 @@ public class Media {
       return Text.literal(CranberryHelpers.toTimeString((int) this.duration.total)).formatted(Formatting.DARK_GRAY);
     }
 
+    public MutableText getShortTitle() {
+      return this.getTitle().append(" (")
+          .append(this.artist == null ? Text.translatable("cranberry.text.no_artist") : Text.literal(this.artist))
+          .append(")")
+          .formatted(Formatting.GRAY);
+    }
+
     public boolean valid() {
       return this.id == null || this.duration.total != 0;
+    }
+
+    // TODO: nullpointerexceptions everywhere (handle things in less ad hoc way)
+    public Track nonNull() {
+      return new Track(this.title == null ? "" : this.title, this.artist == null ? "" : this.artist,
+          this.album == null ? "" : this.album, this.id == null ? "" : this.id, this.playing, this.playbackRate,
+          this.duration);
     }
   }
 
