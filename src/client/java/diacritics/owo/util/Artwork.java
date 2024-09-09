@@ -7,9 +7,17 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 public class Artwork {
-  public int width;
-  public int height;
-  public String data;
+  private int width;
+  private int height;
+  private String data;
+
+  private NativeImage cache;
+
+  public Artwork(int width, int height) {
+    this.width = width;
+    this.height = height;
+    this.data = null;
+  }
 
   public Artwork(int width, int height, String data) {
     this.width = width;
@@ -17,18 +25,40 @@ public class Artwork {
     this.data = data;
   }
 
-  public native static Artwork artwork(int width, int height);
+  private native void _reload();
 
   public static NativeImage empty(int width, int height) {
     NativeImage image = new NativeImage(width, height, false);
-    image.fillRect(0, 0, width, height, 0);
+    image.apply(x -> 0);
     return image;
   }
 
-  // TODO: once we have networking and validity isn't guaranteed, we should
-  // probably make this crash-resistant~
-  @Nullable
+  public void reload() {
+    this._reload();
+    this.cache = null;
+  }
+
+  public boolean cached() {
+    return this.cache != null;
+  }
+
+  public NativeImage reloaded() {
+    this.reload();
+    return this.image();
+  }
+
   public NativeImage image() {
+    if (this.cached()) {
+      return this.cache;
+    }
+
+    NativeImage image = this.raw();
+    this.cache = image;
+    return image == null ? empty(this.width, this.width) : image;
+  }
+
+  @Nullable
+  private NativeImage raw() {
     try {
       if (this.data == null) {
         return null;

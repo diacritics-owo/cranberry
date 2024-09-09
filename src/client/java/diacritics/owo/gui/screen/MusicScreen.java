@@ -18,7 +18,6 @@ import io.wispforest.owo.ui.core.Size;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.core.Surface;
 import io.wispforest.owo.ui.core.VerticalAlignment;
-import net.minecraft.client.texture.NativeImage;
 import net.minecraft.text.Text;
 
 public class MusicScreen extends BaseOwoScreen<FlowLayout> {
@@ -30,7 +29,7 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
   private ButtonComponent toggle;
 
   private Media.Track track;
-  private NativeImage artwork;
+  private Artwork artwork = new Artwork(IMAGE_SIZE.width(), IMAGE_SIZE.height());
 
   public MusicScreen() {
     super(Text.translatable("cranberry.screen.title"));
@@ -77,12 +76,10 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
     Media.Track newTrack = Media.track();
     boolean newId = newTrack.id() == null || !newTrack.id().equals(this.track == null ? null : this.track.id());
 
-    // some values are briefly nil/default after resuming
+    // note: some values are briefly nil/default after resuming playback
 
-    if (this.artwork == null || newId) {
-      this.artwork = Artwork.artwork(IMAGE_SIZE.width(), IMAGE_SIZE.height()).image();
-      this.image.setImage(
-          this.artwork == null ? Artwork.empty(IMAGE_SIZE.width(), IMAGE_SIZE.height()) : this.artwork);
+    if (!this.artwork.cached() || newId) {
+      this.image.setImage(this.artwork.reloaded());
     }
 
     if (this.track == null || newTrack.valid() || newId) {

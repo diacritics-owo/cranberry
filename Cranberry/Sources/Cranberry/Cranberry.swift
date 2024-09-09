@@ -50,16 +50,13 @@ public func track(
   return information
 }
 
-@_silgen_name("Java_diacritics_owo_util_Artwork_artwork")
-public func artwork(
+@_silgen_name("Java_diacritics_owo_util_Artwork__1reload")
+public func reload(
   env: UnsafeMutablePointer<JNIEnv>,
-  class: JavaObject,
-  width: JavaInt,
-  height: JavaInt
-) -> JavaObject {
+  artwork: JavaObject
+) {
   let jni = env.jni
   let data = Cranberry().information
-  let size = NSSize(width: Int(width), height: Int(height))
 
   let artworkClass = jni.FindClass(env, "diacritics/owo/util/Artwork")!
 
@@ -67,17 +64,16 @@ public func artwork(
   let heightField = jni.GetFieldID(env, artworkClass, "height", "I")!
   let dataField = jni.GetFieldID(env, artworkClass, "data", "Ljava/lang/String;")!
 
+  let width = jni.GetIntField(env, artwork, widthField)
+  let height = jni.GetIntField(env, artwork, heightField)
+  let size = NSSize(width: Int(width), height: Int(height))
+
   let image = data.artwork.data?.ciImage
 
-  let artwork = jni.AllocObject(env, artworkClass)!
-  jni.SetIntField(env, artwork, widthField, width)
-  jni.SetIntField(env, artwork, heightField, height)
   jni.SetObjectField(
     env, artwork, dataField,
     image?.resized(size)?.nsImage
       .data?.javaString(env))
-
-  return artwork
 }
 
 @_silgen_name("Java_diacritics_owo_util_Media_play")
