@@ -51,6 +51,7 @@ dependencies {
 
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
   include "io.wispforest:owo-sentinel:${project.owo_version}"
+	annotationProcessor modImplementation("io.wispforest:owo-lib:${project.owo_version}")
 }
 
 processResources {
@@ -89,9 +90,16 @@ publishing {
 	repositories {}
 }
 
-// build and copy the dylib
 tasks.build.doFirst {
+	// build and copy the dylib
 	exec {
 		commandLine 'bash', '-c', 'cd Cranberry && swift build -c release && cp .build/release/libCranberry.dylib ../src/main/resources/assets/cranberry'
+	}
+
+	// copy the generated code - not necessary for a successful build, but it quells vscode
+	copy {
+		from "build/generated/sources/annotationProcessor/java/client/"
+		into "build/generated/sources/annotationProcessor/java/client/diacritics/owo/config"
+		include "ClientConfig.java"
 	}
 }

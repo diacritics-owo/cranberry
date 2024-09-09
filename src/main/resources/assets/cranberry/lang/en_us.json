@@ -6,5 +6,9 @@
   "cranberry.button.play": "Play",
   "cranberry.button.pause": "Pause",
   "cranberry.text.no_title": "No Title",
-  "cranberry.text.no_artist": "Unknown Artist"
+  "cranberry.text.no_artist": "Unknown Artist",
+
+  "text.config.cranberry-client-config.title": "Cranberry",
+  "text.config.cranberry-client-config.option.sendStatus": "Send Music Status",
+  "text.config.cranberry-client-config.option.receiveStatus": "Receive Music Statuses"
 }

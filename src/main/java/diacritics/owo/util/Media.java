@@ -37,7 +37,7 @@ public class Media {
     }
 
     public boolean valid() {
-      return this.id == null || this.duration.total != 0;
+      return (this.id == null || this.duration.total != 0) && (this.title != null && !this.title.isEmpty());
     }
 
     // TODO: nullpointerexceptions everywhere (handle things in less ad hoc way)

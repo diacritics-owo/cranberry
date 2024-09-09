@@ -7,8 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import diacritics.owo.network.C2SListeningPacket;
 import diacritics.owo.network.C2SRequestPollListeningPacket;
+import diacritics.owo.network.C2SStopListeningPacket;
 import diacritics.owo.network.S2CListeningPacket;
 import diacritics.owo.network.S2CPollListeningPacket;
+import diacritics.owo.network.S2CStopListeningPacket;
 import io.wispforest.owo.network.OwoNetChannel;
 import java.io.File;
 
@@ -51,6 +53,10 @@ public class Cranberry implements ModInitializer {
 			// TODO: configurable
 			UWU.registerServerbound(C2SRequestPollListeningPacket.class, (message, access) -> {
 				UWU.serverHandle(access.runtime()).send(new S2CPollListeningPacket());
+			});
+
+			UWU.registerServerbound(C2SStopListeningPacket.class, (message, access) -> {
+				UWU.serverHandle(access.runtime()).send(new S2CStopListeningPacket(access.player().getUuid()));
 			});
 		}
 	}

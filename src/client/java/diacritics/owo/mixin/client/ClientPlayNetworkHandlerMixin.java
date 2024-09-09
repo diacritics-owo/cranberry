@@ -6,14 +6,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import diacritics.owo.Cranberry;
-import diacritics.owo.network.C2SRequestPollListeningPacket;
+import diacritics.owo.CranberryClient;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class ClientPlayNetworkHandlerMixin {
   @Inject(at = @At("TAIL"), method = "onGameJoin")
   public void joinWorld(GameJoinS2CPacket packet,
       CallbackInfo info) {
-    Cranberry.UWU.clientHandle().send(new C2SRequestPollListeningPacket());
+    CranberryClient.sendRequestPollPacket();
   }
 }
