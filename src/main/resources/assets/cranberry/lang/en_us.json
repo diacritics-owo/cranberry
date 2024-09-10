@@ -10,5 +10,7 @@
 
   "text.config.cranberry-client-config.title": "Cranberry",
   "text.config.cranberry-client-config.option.sendStatus": "Send Music Status",
-  "text.config.cranberry-client-config.option.receiveStatus": "Receive Music Statuses"
+  "text.config.cranberry-client-config.option.receiveStatus": "Receive Music Statuses",
+  "text.config.cranberry-client-config.option.colorBackground": "Dynamic Background",
+  "text.config.cranberry-client-config.option.colorBackground.tooltip": "The background of the music screen will be colored based on the artwork"
 }

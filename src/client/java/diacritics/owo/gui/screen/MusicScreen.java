@@ -75,8 +75,7 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
     this.image = new ImageWidget(0, 0,
         Artwork.empty(CranberryHelpers.IMAGE_SIZE.width(), CranberryHelpers.IMAGE_SIZE.height()));
     this.listening = Containers.verticalFlow(Sizing.content(), Sizing.content());
-    this.listening.padding(Insets.of(5))
-        .surface(Surface.PANEL_INSET);
+    this.listening.padding(Insets.of(5));
 
     this.infoSkeleton = Components.label(Text.empty());
     this.toggleSkeleton = Components.button(Text.empty(), button -> {
@@ -145,6 +144,10 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
     if (this.track == null || newTrack.valid() || newId) {
       this.track = newTrack;
 
+      // reset the width
+      this.listening.horizontalSizing(Sizing.fixed(0));
+      this.listeningSkeleton.horizontalSizing(this.listening.horizontalSizing().get());
+
       this.info.text(this.track.getTitle().append("\n")
           .append(this.track.getSubtitle().append("\n"))
           .append(this.track.getDuration()));
@@ -175,15 +178,46 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
 
       this.infoSkeleton.text(this.info.text());
       this.listeningSkeleton.clearChildren();
-      this.listeningSkeleton.children(this.listening.children().stream()
-          .map(entry -> Containers.horizontalFlow(entry.horizontalSizing().get(), entry.verticalSizing().get()))
-          .collect(Collectors.toList()));
+      this.listeningSkeleton.children(CranberryClient.LISTENING.entrySet().stream().map(entry -> {
+        UUID player = entry.getKey();
+        Media.Track track = entry.getValue().first;
+        Artwork icon = entry.getValue().second;
+
+        PlayerListEntry playerListEntry = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(player);
+
+        if (playerListEntry == null)
+          return null;
+
+        return Containers.horizontalFlow(Sizing.content(), Sizing.content())
+            .child(Components
+                .label(Text.literal(
+                    playerListEntry.getProfile()
+                        .getName())))
+            .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
+                .child(Components.wrapVanillaWidget(
+                    new ImageWidget(0, 0, Artwork.empty(icon.image().getWidth(), icon.image().getHeight()))))
+                .margins(Insets.horizontal(5)))
+            .child(Components.label(track.getShortTitle()))
+            .verticalAlignment(VerticalAlignment.CENTER)
+            .margins(Insets.vertical(2));
+      }).filter(x -> x != null).collect(Collectors.toList()));
+
+      // make sure the width of the parent is at least enough to fit everything (see
+      // below)
+      this.listening.horizontalSizing(Sizing.content());
+      this.listeningSkeleton.horizontalSizing(this.listening.horizontalSizing().get());
     }
 
     // the text and image can update out of sync, so we need to update the color
     // every tick (~~we could update the color only when needed but the overhead is
     // negligible~~)
     this.info.text(this.info.text().copy().withColor(CranberryHelpers.textColor(this.color)));
+
+    // ditto
+    ParentComponent parent = this.listening.parent();
+    Insets padding = parent.padding().get();
+    this.listening.sizing(Sizing.fixed(parent.width() - padding.left() - padding.right()), Sizing.content());
+    this.listeningSkeleton.sizing(this.listening.horizontalSizing().get(), this.listening.verticalSizing().get());
   }
 
   public void forceUpdate() {
