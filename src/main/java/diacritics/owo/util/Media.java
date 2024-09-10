@@ -16,19 +16,18 @@ public class Media {
   public static record Track(String title, String artist, String album, String id, boolean playing, float playbackRate,
       Duration duration) {
     public MutableText getTitle() {
-      return (this.title == null ? Text.translatable("cranberry.text.no_title") : Text.literal(this.title))
-          .formatted(Formatting.BLACK);
+      return (this.title == null ? Text.translatable("cranberry.text.no_title") : Text.literal(this.title));
     }
 
     public MutableText getSubtitle() {
       return (this.artist == null ? Text.translatable("cranberry.text.no_artist") : Text.literal(this.artist))
           .append(this.artist != null && this.album != null ? " — " : "").append(this.album == null ? "" : this.album)
-          .formatted(Formatting.DARK_GRAY);
+          .formatted(Formatting.ITALIC);
     }
 
     public MutableText getDuration() {
       return Text.literal(CranberryHelpers.toTimeString((int) this.duration.total))
-          .formatted(Formatting.DARK_GRAY, Formatting.ITALIC);
+          .formatted(Formatting.ITALIC);
     }
 
     public MutableText getShortTitle() {

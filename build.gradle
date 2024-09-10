@@ -52,6 +52,9 @@ dependencies {
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
   include "io.wispforest:owo-sentinel:${project.owo_version}"
 	annotationProcessor modImplementation("io.wispforest:owo-lib:${project.owo_version}")
+
+	implementation "de.androidpit:color-thief:${project.color_thief_version}"
+	include "de.androidpit:color-thief:${project.color_thief_version}"
 }
 
 processResources {

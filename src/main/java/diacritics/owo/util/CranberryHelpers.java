@@ -34,4 +34,20 @@ public class CranberryHelpers {
         .map(n -> new BigInteger(n, 16).intValue())
         .collect(Collectors.toList());
   }
+
+  public static int textColor(int backgroundColor) {
+    double r = backgroundColor << 8 >>> 24;
+    double g = backgroundColor << 16 >>> 24;
+    double b = backgroundColor << 24 >>> 24;
+
+    double x = 2.4;
+    double y = (Math.pow((r / 0xff), x) * 0.2126729) + (Math.pow((g / 0xff), x) * 0.7151522)
+        + (Math.pow((b / 0xff), x) * 0.0721750);
+
+    return y < 0.342 ? 0xffffffff : 0xff000000;
+  }
+
+  public static int toArgb(int[] rgb) {
+    return 0xff000000 + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2];
+  }
 }

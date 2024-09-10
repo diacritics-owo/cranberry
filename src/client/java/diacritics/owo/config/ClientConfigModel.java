@@ -9,8 +9,10 @@ import io.wispforest.owo.config.annotation.Modmenu;
 @Config(name = "cranberry-client-config", wrapperName = "ClientConfig")
 public class ClientConfigModel {
   @Hook
-  public boolean sendStatus = true; 
+  public boolean sendStatus = true;
 
   @Hook
   public boolean receiveStatus = true;
+
+  public boolean colorBackground = true;
 }

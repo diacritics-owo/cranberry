@@ -1,8 +1,7 @@
 package diacritics.owo.gui.screen;
 
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
+import de.androidpit.colorthief.ColorThief;
 import diacritics.owo.CranberryClient;
 import diacritics.owo.gui.widget.ImageWidget;
 import diacritics.owo.util.Artwork;
@@ -14,16 +13,30 @@ import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
+import io.wispforest.owo.ui.container.RenderEffectWrapper;
+import io.wispforest.owo.ui.container.RenderEffectWrapper.RenderEffect;
+import io.wispforest.owo.ui.core.Color;
 import io.wispforest.owo.ui.core.HorizontalAlignment;
 import io.wispforest.owo.ui.core.Insets;
 import io.wispforest.owo.ui.core.OwoUIAdapter;
+import io.wispforest.owo.ui.core.ParentComponent;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.core.Surface;
 import io.wispforest.owo.ui.core.VerticalAlignment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.texture.NativeImage;
 import net.minecraft.text.Text;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.awt.image.BufferedImage;
 
 public class MusicScreen extends BaseOwoScreen<FlowLayout> {
+  private ImageWidget imageSkeleton;
+  private LabelComponent infoSkeleton;
+  private ButtonComponent toggleSkeleton;
+  private FlowLayout listeningSkeleton;
+
   private ImageWidget image;
   private LabelComponent info;
   private ButtonComponent toggle;
@@ -31,6 +44,8 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
 
   private Media.Track track;
   private Artwork artwork = new Artwork(CranberryHelpers.IMAGE_SIZE.width(), CranberryHelpers.IMAGE_SIZE.height());
+  private int color;
+  private RenderEffectWrapper<ParentComponent> renderEffect;
 
   public MusicScreen() {
     super(Text.translatable("cranberry.screen.title"));
@@ -63,8 +78,30 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
     this.listening.padding(Insets.of(5))
         .surface(Surface.PANEL_INSET);
 
-    rootComponent.child(
-        Containers.verticalFlow(Sizing.content(), Sizing.content())
+    this.infoSkeleton = Components.label(Text.empty());
+    this.toggleSkeleton = Components.button(Text.empty(), button -> {
+    });
+    this.imageSkeleton = new ImageWidget(0, 0,
+        Artwork.empty(CranberryHelpers.IMAGE_SIZE.width(), CranberryHelpers.IMAGE_SIZE.height()));
+    this.listeningSkeleton = Containers.verticalFlow(Sizing.content(), Sizing.content());
+    this.listeningSkeleton.padding(Insets.of(5))
+        .surface(Surface.PANEL_INSET);
+
+    this.renderEffect = Containers.renderEffect(Containers.verticalFlow(Sizing.content(), Sizing.content())
+        .child(Containers.horizontalFlow(Sizing.content(), Sizing.content())
+            .child(Components.wrapVanillaWidget(this.imageSkeleton))
+            .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
+                .child(this.infoSkeleton).child(this.toggleSkeleton).margins(Insets.left(10)))
+            .verticalAlignment(VerticalAlignment.CENTER)
+            .padding(Insets.bottom(10)))
+        .child(this.listeningSkeleton)
+        .padding(Insets.of(10))
+        .verticalAlignment(VerticalAlignment.CENTER)
+        .surface(Surface.PANEL));
+
+    rootComponent.child(Containers.stack(Sizing.content(), Sizing.content())
+        .child(this.renderEffect)
+        .child(Containers.renderEffect(Containers.verticalFlow(Sizing.content(), Sizing.content())
             .child(Containers.horizontalFlow(Sizing.content(), Sizing.content())
                 .child(Components.wrapVanillaWidget(this.image))
                 .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
@@ -73,8 +110,7 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
                 .padding(Insets.bottom(10)))
             .child(this.listening)
             .padding(Insets.of(10))
-            .surface(Surface.PANEL)
-            .verticalAlignment(VerticalAlignment.CENTER));
+            .verticalAlignment(VerticalAlignment.CENTER))));
   }
 
   @Override
@@ -85,14 +121,32 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
     // note: some values are briefly nil/default after resuming playback
 
     if (!this.artwork.cached() || newId) {
-      this.image.setImage(this.artwork.reloaded());
+      NativeImage image = this.artwork.reloaded();
+      this.image.setImage(image);
+      this.imageSkeleton.setImage(Artwork.empty(image.getWidth(), image.getHeight()));
+
+      this.renderEffect.clearEffects();
+      if (CranberryClient.CONFIG.colorBackground()) {
+        BufferedImage buffered = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        for (int x = 0; x < image.getWidth(); x++) {
+          for (int y = 0; y < image.getHeight(); y++) {
+            buffered.setRGB(x, y, image.getColor(x, y));
+          }
+        }
+
+        this.color = CranberryHelpers.toArgb(ColorThief.getColorMap(buffered, 2).vboxes.get(0).avg(false));
+        this.renderEffect.effect(RenderEffect.color(Color.ofArgb(this.color)));
+      } else {
+        this.color = 0xffffffff;
+      }
     }
 
     if (this.track == null || newTrack.valid() || newId) {
       this.track = newTrack;
 
       this.info.text(this.track.getTitle().append("\n")
-          .append(this.track.getSubtitle()).append("\n")
+          .append(this.track.getSubtitle().append("\n"))
           .append(this.track.getDuration()));
       this.setToggle(this.track.playing());
 
@@ -102,19 +156,34 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
         Media.Track track = entry.getValue().first;
         Artwork icon = entry.getValue().second;
 
+        PlayerListEntry playerListEntry = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(player);
+
+        if (playerListEntry == null)
+          return null;
+
         return Containers.horizontalFlow(Sizing.content(), Sizing.content())
             .child(Components
                 .label(Text.literal(
-                    // TODO: check if player exists
-                    MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(player).getProfile()
+                    playerListEntry.getProfile()
                         .getName())))
             .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
                 .child(Components.wrapVanillaWidget(new ImageWidget(0, 0, icon.image()))).margins(Insets.horizontal(5)))
             .child(Components.label(track.getShortTitle()))
             .verticalAlignment(VerticalAlignment.CENTER)
             .margins(Insets.vertical(2));
-      }).collect(Collectors.toList()));
+      }).filter(x -> x != null).collect(Collectors.toList()));
+
+      this.infoSkeleton.text(this.info.text());
+      this.listeningSkeleton.clearChildren();
+      this.listeningSkeleton.children(this.listening.children().stream()
+          .map(entry -> Containers.horizontalFlow(entry.horizontalSizing().get(), entry.verticalSizing().get()))
+          .collect(Collectors.toList()));
     }
+
+    // the text and image can update out of sync, so we need to update the color
+    // every tick (~~we could update the color only when needed but the overhead is
+    // negligible~~)
+    this.info.text(this.info.text().copy().withColor(CranberryHelpers.textColor(this.color)));
   }
 
   public void forceUpdate() {
@@ -124,6 +193,7 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
   public void setToggle(boolean playing) {
     this.toggle.setMessage(
         Text.translatable("cranberry.button." + (playing ? "pause" : "play")));
+    this.toggleSkeleton.setMessage(this.toggle.getMessage());
     this.forceUpdate();
   }
 
