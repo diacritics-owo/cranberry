@@ -51,7 +51,6 @@ public func track(
     let albumField = jni.GetFieldID(env, informationClass, "album", "Ljava/lang/String;")!
     let idField = jni.GetFieldID(env, informationClass, "id", "Ljava/lang/String;")!
     let playingField = jni.GetFieldID(env, informationClass, "playing", "Z")!
-    let playbackRateField = jni.GetFieldID(env, informationClass, "playbackRate", "F")!
     let durationField = jni.GetFieldID(
       env, informationClass, "duration", "Ldiacritics/owo/util/Media$Duration;")!
 
@@ -68,7 +67,6 @@ public func track(
     jni.SetObjectField(env, information, albumField, data.album?.javaString(env))
     jni.SetObjectField(env, information, idField, data.id?.description.javaString(env))
     jni.SetBooleanField(env, information, playingField, data.playing ? 1 : 0)
-    jni.SetFloatField(env, information, playbackRateField, data.playbackRate ?? 0)
     jni.SetObjectField(env, information, durationField, duration)
 
     return information
@@ -150,8 +148,6 @@ public class Cranberry {
         self.information.title = information[kMRMediaRemoteNowPlayingInfoTitle] as? String
         self.information.artist = information[kMRMediaRemoteNowPlayingInfoArtist] as? String
         self.information.album = information[kMRMediaRemoteNowPlayingInfoAlbum] as? String
-        self.information.playbackRate =
-          information[kMRMediaRemoteNowPlayingInfoPlaybackRate] as? Float
         self.information.id = information[kMRMediaRemoteNowPlayingInfoUniqueIdentifier] as? Int
 
         self.information.duration.elapsed =
@@ -185,7 +181,6 @@ public class Cranberry {
     public var title: String?
     public var artist: String?
     public var album: String?
-    public var playbackRate: Float?
     public var playing: Bool
     public var id: Int?
     public var duration: Duration

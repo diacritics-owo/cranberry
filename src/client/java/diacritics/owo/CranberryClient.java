@@ -20,6 +20,7 @@ import diacritics.owo.util.Media;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -61,6 +62,9 @@ public class CranberryClient implements ClientModInitializer {
 			return;
 		}
 
+		System.load(FabricLoader.getInstance().getModContainer(Cranberry.MOD_ID).get()
+				.findPath("assets/cranberry/libCranberry.dylib").get().toAbsolutePath().toString());
+
 		open = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.cranberry.open",
 				InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.cranberry.keybindings"));
 
@@ -88,22 +92,23 @@ public class CranberryClient implements ClientModInitializer {
 
 		initializeListeners();
 
-		Cranberry.UWU.registerClientbound(S2CListeningPacket.class, (message, access) -> {
+		ClientPlayNetworking.registerGlobalReceiver(S2CListeningPacket.ID, (payload, context) -> {
 			if (!CONFIG.receiveStatus())
 				return;
 
+			System.out.println(payload.track().title());
 			// TODO: update more efficiently
-			if (!message.player().equals(access.player().getUuid())) {
-				LISTENING.put(message.player(), Pair.of(message.track(), Artwork.from(message.artwork())));
+			if (!payload.player().equals(context.player().getUuid())) {
+				LISTENING.put(payload.player(), Pair.of(payload.track(), Artwork.from(payload.artwork())));
 			}
 		});
 
-		Cranberry.UWU.registerClientbound(S2CPollListeningPacket.class, (message, access) -> {
+		ClientPlayNetworking.registerGlobalReceiver(S2CPollListeningPacket.ID, (payload, context) -> {
 			sendListeningPacket();
 		});
 
-		Cranberry.UWU.registerClientbound(S2CStopListeningPacket.class, (message, access) -> {
-			LISTENING.remove(message.player());
+		ClientPlayNetworking.registerGlobalReceiver(S2CStopListeningPacket.ID, (payload, context) -> {
+			LISTENING.remove(payload.player());
 		});
 	}
 
@@ -124,7 +129,8 @@ public class CranberryClient implements ClientModInitializer {
 					icon.reload();
 				}
 
-				Cranberry.UWU.clientHandle().send(new C2SListeningPacket(track.nonNull(), icon.artworkData()));
+				// TODO: is nonnull necessary?
+				ClientPlayNetworking.send(new C2SListeningPacket(track.nonNull(), icon.artworkData()));
 			}
 		}
 	}
@@ -135,16 +141,11 @@ public class CranberryClient implements ClientModInitializer {
 
 		if (MinecraftClient.getInstance().getNetworkHandler() != null
 				&& MinecraftClient.getInstance().getNetworkHandler().isConnectionOpen()) {
-			Cranberry.UWU.clientHandle().send(new C2SRequestPollListeningPacket());
+			ClientPlayNetworking.send(new C2SRequestPollListeningPacket());
 		}
 	}
 
 	public static void sendStopListeningPacket() {
-		Cranberry.UWU.clientHandle().send(new C2SStopListeningPacket());
-	}
-
-	static {
-		System.load(FabricLoader.getInstance().getModContainer(Cranberry.MOD_ID).get()
-				.findPath("assets/cranberry/libCranberry.dylib").get().toAbsolutePath().toString());
+		ClientPlayNetworking.send(new C2SStopListeningPacket());
 	}
 }

@@ -129,39 +129,40 @@ public class MusicScreen extends BaseOwoScreen<FlowLayout> {
           .append(this.track.getSubtitle().append("\n"))
           .append(this.track.getDuration()));
       this.setToggle(this.track.playing());
-
-      this.listening.clearChildren();
-      this.listening.children(CranberryClient.LISTENING.entrySet().stream().map(entry -> {
-        UUID player = entry.getKey();
-        Media.Track track = entry.getValue().first;
-        Artwork icon = entry.getValue().second;
-
-        PlayerListEntry playerListEntry = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(player);
-
-        if (playerListEntry == null)
-          return null;
-
-        return Containers.horizontalFlow(Sizing.content(), Sizing.content())
-            .child(Components
-                .label(Text.literal(
-                    playerListEntry.getProfile()
-                        .getName())))
-            .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
-                .child(Components.wrapVanillaWidget(new ImageWidget(0, 0, icon.image()))).margins(Insets.horizontal(5)))
-            .child(Components.label(track.getShortTitle()))
-            .verticalAlignment(VerticalAlignment.CENTER)
-            .margins(Insets.vertical(2));
-      }).filter(x -> x != null).collect(Collectors.toList()));
-
-      // make sure the width of the parent is at least enough to fit everything (see
-      // below)
-      this.listening.horizontalSizing(Sizing.content());
     }
+
+    // the icon is cached so this shouldn't be too bad?
+    this.listening.clearChildren();
+    this.listening.children(CranberryClient.LISTENING.entrySet().stream().map(entry -> {
+      UUID player = entry.getKey();
+      Media.Track track = entry.getValue().first;
+      Artwork icon = entry.getValue().second;
+
+      PlayerListEntry playerListEntry = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(player);
+
+      if (playerListEntry == null)
+        return null;
+
+      return Containers.horizontalFlow(Sizing.content(), Sizing.content())
+          .child(Components
+              .label(Text.literal(
+                  playerListEntry.getProfile()
+                      .getName())))
+          .child(Containers.verticalFlow(Sizing.content(), Sizing.content())
+              .child(Components.wrapVanillaWidget(new ImageWidget(0, 0, icon.image()))).margins(Insets.horizontal(5)))
+          .child(Components.label(track.getShortTitle()))
+          .verticalAlignment(VerticalAlignment.CENTER)
+          .margins(Insets.vertical(2));
+    }).filter(x -> x != null).collect(Collectors.toList()));
 
     // the text and image can update out of sync, so we need to update the color
     // every tick (~~we could update the color only when needed but the overhead is
     // negligible~~)
     this.info.text(this.info.text().copy().withColor(CranberryHelpers.textColor(this.color)));
+
+    // make sure the width of the parent is at least enough to fit everything (see
+    // below)
+    this.listening.horizontalSizing(Sizing.content());
 
     // ditto
     ParentComponent parent = this.listeningSurface.parent();
