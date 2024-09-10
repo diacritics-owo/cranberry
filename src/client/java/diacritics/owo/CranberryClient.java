@@ -1,9 +1,9 @@
 package diacritics.owo;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.lang3.SystemUtils;
 import org.lwjgl.glfw.GLFW;
 import com.ibm.icu.impl.Pair;
 import diacritics.owo.config.ClientConfig;
@@ -25,41 +25,32 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.Util.OperatingSystem;
 
 public class CranberryClient implements ClientModInitializer {
 	public static final ClientConfig CONFIG = ClientConfig.createAndLoad();
+	public static OperatingSystem OS = OperatingSystem.UNKNOWN;
 
 	public static final Map<UUID, Pair<Media.Track, Artwork>> LISTENING = new HashMap<>();
 	private static String lastId = null;
 	private static Artwork icon = new Artwork(CranberryHelpers.ICON_SIZE.width(), CranberryHelpers.ICON_SIZE.height());
 
-	public static boolean enabled = false;
-	public static File enableFile = new File(
-			FabricLoader.getInstance().getConfigDir().resolve(".cranberryenable").toString());
-	public static File disableFile = new File(
-			FabricLoader.getInstance().getConfigDir().resolve(".cranberrydisable").toString());
-
 	private static KeyBinding open;
 
+	// TODO: os overrides
 	@Override
 	public void onInitializeClient() {
-		if (enableFile.exists() || disableFile.exists()) {
-			enabled = enableFile.exists();
-			Cranberry.LOGGER.info("detected an override file - cranberry will be {}abled", enabled ? "en" : "dis");
-		} else {
-			if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-				Cranberry.LOGGER.info("os detected as macos - cranberry will enable itself");
-				enabled = true;
-			} else {
-				Cranberry.LOGGER.warn("os not detected as macos - cranberry will not be enabled");
-			}
+		OS = SystemUtils.IS_OS_MAC ? OperatingSystem.OSX
+				: (SystemUtils.IS_OS_LINUX ? OperatingSystem.LINUX
+						: (SystemUtils.IS_OS_WINDOWS ? OperatingSystem.WINDOWS : OperatingSystem.UNKNOWN));
 
-			Cranberry.LOGGER.info(
-					"os detection can be overriden by creating a file called .cranberryenable or .cranberrydisable in the config folder");
-		}
-
-		if (!enabled) {
-			return;
+		switch (OS) {
+			case OperatingSystem.OSX:
+				Cranberry.LOGGER.info("macos - cranberry will be enabled");
+				break;
+			default:
+				Cranberry.LOGGER.info("unsupported operating system ({}) - cranberry will be disabled", OS.getName());
+				return;
 		}
 
 		System.load(FabricLoader.getInstance().getModContainer(Cranberry.MOD_ID).get()
