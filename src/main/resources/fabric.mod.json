@@ -3,11 +3,11 @@
   "id": "cranberry",
   "version": "${version}",
   "name": "Cranberry",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "In-game music playback on macOS",
   "authors": ["diacritics-owo"],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://modrinth.com/mod/cranberry",
+    "sources": "https://github.com/diacritics-owo/cranberry"
   },
   "license": "MIT",
   "icon": "assets/cranberry/icon.png",

@@ -87,8 +87,6 @@ public class CranberryClient implements ClientModInitializer {
 			if (!CONFIG.receiveStatus())
 				return;
 
-			System.out.println(payload.track().title());
-			// TODO: update more efficiently
 			if (!payload.player().equals(context.player().getUuid())) {
 				LISTENING.put(payload.player(), Pair.of(payload.track(), Artwork.from(payload.artwork())));
 			}
@@ -120,7 +118,6 @@ public class CranberryClient implements ClientModInitializer {
 					icon.reload();
 				}
 
-				// TODO: is nonnull necessary?
 				ClientPlayNetworking.send(new C2SListeningPacket(track.nonNull(), icon.artworkData()));
 			}
 		}
