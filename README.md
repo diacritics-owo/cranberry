@@ -6,11 +6,18 @@ In-game music playback on macOS
 
 - [Cranberry](#cranberry)
   - [Table of Contents](#table-of-contents)
+  - [Images](#images)
   - [Client Installation](#client-installation)
   - [Server Installation](#server-installation)
   - [Configuration Options](#configuration-options)
   - [How Does It Work?](#how-does-it-work)
   - [Windows / Linux?](#windows--linux)
+
+## Images
+
+![an in-game image of fighter by tali playing](./assets/fighter.png)
+
+![an in-game image of 11:11 by megara playing](./assets/11-11.png)
 
 ## Client Installation
 
